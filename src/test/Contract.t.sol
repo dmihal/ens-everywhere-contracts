@@ -1,33 +1,40 @@
-// SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
 import {DSTest} from "ds-test/test.sol";
 import {Utilities} from "./utils/Utilities.sol";
 import {console} from "./utils/Console.sol";
 import {Vm} from "forge-std/Vm.sol";
+import { UserLib, User } from "./utils/User.sol";
 
 contract ContractTest is DSTest {
-    Vm internal immutable vm = Vm(HEVM_ADDRESS);
+    using UserLib for User;
+    
+		Vm internal immutable vm = Vm(HEVM_ADDRESS);
 
     Utilities internal utils;
-    address payable[] internal users;
+    User[] internal users;
 
     function setUp() public {
         utils = new Utilities();
-        users = utils.createUsers(5);
-    }
+
+        User[] memory _users = utils.createUsers(5);
+        for (uint256 i = 0; i < _users.length; i += 1) {
+            users.push(_users[i]);
+        }
+		}
 
     function testExample() public {
-        address payable alice = users[0];
+        User memory alice = users[0];
         // labels alice's address in call traces as "Alice [<address>]"
-        vm.label(alice, "Alice");
-        console.log("alice's address", alice);
-        address payable bob = users[1];
-        vm.label(bob, "Bob");
+        alice.label("Alice");
+        console.log("alice's address", alice.addr());
+        User memory bob = users[1];
+        bob.label("Bob");
 
-        vm.prank(alice);
-        (bool sent, ) = bob.call{value: 10 ether}("");
+        vm.prank(alice.addr());
+        (bool sent, ) = bob.addr().call{value: 10 ether}("");
         assertTrue(sent);
-        assertGt(bob.balance, alice.balance);
+        assertGt(bob.addr().balance, alice.addr().balance);
     }
 }
