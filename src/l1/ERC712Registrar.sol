@@ -61,6 +61,8 @@ contract ERC712Registrar {
     }
 
     function commit(Commitment[] calldata commitments) external {
+        bytes32[] memory commitmentHashes = new bytes32[](commitments.length);
+
         for (uint256 i = 0; i < commitments.length; i += 1) {
             bytes32 digest = keccak256(
                 abi.encodePacked(
@@ -78,9 +80,11 @@ contract ERC712Registrar {
             address recoveredAddress = ecrecover(digest, commitments[i].v, commitments[i].r, commitments[i].s);
 
             IERC20(commitments[i].feeToken).transferFrom(recoveredAddress, msg.sender, commitments[i].feeAmount);
+
+            commitmentHashes[i] = commitments[i].commitment;
         }
 
-        bytes32 bulkCommitment = keccak256(abi.encode(commitments));
+        bytes32 bulkCommitment = keccak256(abi.encodePacked(commitmentHashes));
 
         ensBulkRegistrar.commit(bulkCommitment);
     }

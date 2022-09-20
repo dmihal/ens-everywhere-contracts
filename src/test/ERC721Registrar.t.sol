@@ -48,15 +48,38 @@ contract ERC721RegistrarTest is DSTest {
             abi.encode(erc712Registrar.COMMIT_TYPEHASH(), commitment, feeToken, amount)
         );
     }
-    
+
+    function generateRegistrationSignature(
+        User memory user,
+        string memory name,
+        address owner,
+        uint256 duration,
+        bytes12 secret,
+        address feeToken,
+        uint256 feeAmount
+    ) internal returns (Signature memory) {
+        return user.signEIP712(
+            erc712Registrar.DOMAIN_SEPARATOR(),
+            abi.encode(
+                erc712Registrar.REGISTER_TYPEHASH(),
+                name,
+                owner,
+                duration,
+                secret,
+                feeToken,
+                feeAmount
+            )
+        );
+    }
 
     function testCommitAndRegister() public {
         User memory relayer = users[0];
         User memory vitalik = users[1];
         string memory name = "vitalik.eth";
+        uint32 duration = 1 days;
 
         bytes12 secret = 0x000000000000000000042069;
-        bytes32 commitment = erc712Registrar.generateCommitment(name, vitalik.addr(), secret, 1 days);
+        bytes32 commitment = erc712Registrar.generateCommitment(name, vitalik.addr(), secret, duration);
 
         Signature memory commitSignature = generateCommitSignature(
             vitalik,
@@ -65,13 +88,15 @@ contract ERC721RegistrarTest is DSTest {
             0.001 ether
         );
 
-        vm.startPrank(vitalik.addr());
         console.log('vitalik', vitalik.addr());
+
+        vm.startPrank(vitalik.addr());
         utils.dai().approve(address(erc712Registrar), 0.001 ether);
         vm.stopPrank();
 
         vm.startPrank(relayer.addr());
-        ERC712Registrar.Commitment memory commitmentData = ERC712Registrar.Commitment({
+        ERC712Registrar.Commitment[] memory commitmentArray = new ERC712Registrar.Commitment[](1);
+        commitmentArray[0] = ERC712Registrar.Commitment({
             commitment: commitment,
             feeAmount: 0.001 ether,
             feeToken: address(utils.dai()),
@@ -79,18 +104,44 @@ contract ERC721RegistrarTest is DSTest {
             r: commitSignature.r,
             s: commitSignature.s
         });
-        ERC712Registrar.Commitment[] memory commitmentArray = new ERC712Registrar.Commitment[](1);
-        commitmentArray[0] = commitmentData;
         erc712Registrar.commit(commitmentArray);
 
-        assertEq(erc712Registrar);
+        vm.stopPrank();
 
-        // labels alice's address in call traces as "Alice [<address>]"
+        // Register
+        vm.warp(block.timestamp + MINIMUM_WAIT + 1);
 
-        // vm.prank(alice);
-        // (bool sent, ) = bob.call{value: 10 ether}("");
-        // assertTrue(sent);
-        // assertGt(bob.balance, alice.balance);
+        vm.startPrank(vitalik.addr());
+        utils.dai().approve(address(erc712Registrar), 0.001 ether);
+        vm.stopPrank();
+
+        Signature memory registerSignature = generateRegistrationSignature(
+            vitalik,
+            name,
+            vitalik.addr(),
+            duration,
+            secret,
+            address(utils.dai()),
+            0.001 ether
+        );
+
+        ERC712Registrar.Registration[] memory registrationData = new ERC712Registrar.Registration[](1);
+        registrationData[0] = ERC712Registrar.Registration({
+            name: name,
+            owner: vitalik.addr(),
+            secret: secret,
+            feeAmount: 0.001 ether,
+            feeToken: address(utils.dai()),
+            duration: duration,
+            v: registerSignature.v,
+            r: registerSignature.r,
+            s: registerSignature.s
+        });
+
+        uint256 registrationFees = bulkRegistrar.namePrice(name);
+
+        erc712Registrar.register{ value: registrationFees }(registrationData);
+
         vm.stopPrank();
     }
 }
