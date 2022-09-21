@@ -16,7 +16,7 @@ contract MockBaseRegistrar is ERC721 /* , IBaseRegistrar */ {
         return id;
     }
 
-    function tokenURI(uint256 id) public view override returns (string memory) {
+    function tokenURI(uint256) public view override returns (string memory) {
         return "";
     }
 

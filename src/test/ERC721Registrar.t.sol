@@ -76,11 +76,15 @@ contract ERC721RegistrarTest is DSTest {
         User memory relayer = users[0];
         User memory vitalik = users[1];
         string memory name = "vitalik.eth";
+        uint256 expectedID = uint256(keccak256(bytes(name))); // Note: we don't use the real namehash
+
         uint32 duration = 1 days;
+        uint256 relayerStartDaiBalance = utils.dai().balanceOf(relayer.addr());
 
         bytes12 secret = 0x000000000000000000042069;
         bytes32 commitment = erc712Registrar.generateCommitment(name, vitalik.addr(), secret, duration);
 
+        {
         Signature memory commitSignature = generateCommitSignature(
             vitalik,
             commitment,
@@ -108,7 +112,11 @@ contract ERC721RegistrarTest is DSTest {
 
         vm.stopPrank();
 
+        assertEq(utils.dai().balanceOf(relayer.addr()) - relayerStartDaiBalance, 0.001 ether);
+        }
+
         // Register
+        {
         vm.warp(block.timestamp + MINIMUM_WAIT + 1);
 
         vm.startPrank(vitalik.addr());
@@ -125,6 +133,7 @@ contract ERC721RegistrarTest is DSTest {
             0.001 ether
         );
 
+        vm.startPrank(relayer.addr());
         ERC712Registrar.Registration[] memory registrationData = new ERC712Registrar.Registration[](1);
         registrationData[0] = ERC712Registrar.Registration({
             name: name,
@@ -143,5 +152,9 @@ contract ERC721RegistrarTest is DSTest {
         erc712Registrar.register{ value: registrationFees }(registrationData);
 
         vm.stopPrank();
+        }
+
+        assertEq(utils.dai().balanceOf(relayer.addr()) - relayerStartDaiBalance, 0.002 ether);
+        assertEq(baseRegistrar.ownerOf(expectedID), vitalik.addr());
     }
 }
