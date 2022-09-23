@@ -21,6 +21,7 @@ contract L2Controller is Ownable, IL2Controller {
     address public immutable bridge;
     uint256 public commitmentCooldownPeriod;
     uint256 public registrationCooldownPeriod;
+    address public l1ControllerAddress;
 
     event CommitmentCreated(bytes32 indexed commitment);
     event CommitmentCooldownStarted(bytes32 indexed commitment);
@@ -34,6 +35,10 @@ contract L2Controller is Ownable, IL2Controller {
         bridge = _bridge;
         commitmentCooldownPeriod = _commitmentCooldownPeriod;
         registrationCooldownPeriod = _registrationCooldownPeriod;
+    }
+
+    function setL1Controller(address l1Controller) external onlyOwner {
+        l1ControllerAddress = l1Controller;
     }
 
     function getCommitment(bytes32 commitment) external view returns (Commitment memory) {
@@ -99,5 +104,41 @@ contract L2Controller is Ownable, IL2Controller {
                 emit UnknownCommitment(commitment);
             }
         }
+    }
+
+    function revealCommitment(
+        string calldata name,
+        bytes12 secret,
+        uint32 duration
+    ) external {}
+
+    function recordRegistration(
+        address relayer,
+        string[] calldata names,
+        bytes32[] calldata skippedCommitments
+    ) external {
+
+    }
+
+    function generateCommitment(
+        string calldata name,
+        bytes12 secret,
+        uint32 duration
+    ) public view returns (bytes32) {
+        bytes32 label = keccak256(bytes(name));
+        return
+            keccak256(
+                abi.encode(
+                    label,
+                    l1ControllerAddress, // Owner
+                    uint256(duration),
+                    address(0), // Resolver
+                    new bytes[](0), //data
+                    bytes32(secret),
+                    false, // reverseRecord,
+                    0, // fuses,
+                    0 // wrapperExpiry
+                )
+            );
     }
 }

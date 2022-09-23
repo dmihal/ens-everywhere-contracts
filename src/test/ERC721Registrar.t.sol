@@ -7,8 +7,8 @@ import { console } from "./utils/Console.sol";
 import { UserLib, User, Signature } from "./utils/User.sol";
 import { Vm } from "forge-std/Vm.sol";
 
-import { MockBaseRegistrar } from "../l1/mocks/MockBaseRegistrar.sol";
-import { MockENSBulkRegistrar } from "../l1/mocks/MockENSBulkRegistrar.sol";
+import { MockBaseRegistrar } from "./mocks/MockBaseRegistrar.sol";
+import { MockENSBulkRegistrar } from "./mocks/MockENSBulkRegistrar.sol";
 import { ERC712Registrar } from "../l1/ERC712Registrar.sol";
 
 contract ERC721RegistrarTest is DSTest {
