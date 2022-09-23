@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import { IBulkRegistrarController } from "./interfaces/IBulkRegistrarController.sol";
-import { IERC20 } from "./interfaces/IERC20.sol";
-import { IERC721 } from "./interfaces/IERC721.sol";
-import { console } from "../test/utils/Console.sol";
+import { IBulkRegistrarController } from "../interfaces/IBulkRegistrarController.sol";
+import { IERC20 } from "../interfaces/IERC20.sol";
+import { IERC721 } from "../interfaces/IERC721.sol";
 
 contract ERC712Registrar {
     struct Commitment {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import { IBulkRegistrarController } from "./interfaces/IBulkRegistrarController.sol";
+import { IBulkRegistrarController } from "../interfaces/IBulkRegistrarController.sol";
 
 contract ENSEverywhere {
     IBulkRegistrarController public immutable ensBulkRegistrar;

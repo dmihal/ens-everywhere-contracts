@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import { IBulkRegistrarController } from "../interfaces/IBulkRegistrarController.sol";
-import { IBaseRegistrar } from "../interfaces/IBaseRegistrar.sol";
+import { IBulkRegistrarController } from "../../interfaces/IBulkRegistrarController.sol";
+import { IBaseRegistrar } from "../../interfaces/IBaseRegistrar.sol";
 
 contract MockENSBulkRegistrar is IBulkRegistrarController {
     address public immutable baseRegistrar;
