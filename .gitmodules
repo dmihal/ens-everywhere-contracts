@@ -13,3 +13,6 @@
 [submodule "lib/contracts"]
 	path = lib/contracts
 	url = https://github.com/fx-portal/contracts
+[submodule "lib/fx-portal"]
+	path = lib/fx-portal
+	url = https://github.com/fx-portal/contracts
