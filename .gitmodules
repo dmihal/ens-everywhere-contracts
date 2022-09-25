@@ -10,3 +10,6 @@
 [submodule "lib/ethregistrar"]
 	path = lib/ethregistrar
 	url = https://github.com/ensdomains/ethregistrar
+[submodule "lib/contracts"]
+	path = lib/contracts
+	url = https://github.com/fx-portal/contracts
