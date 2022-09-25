@@ -24,7 +24,7 @@ contract L1Controller is Ownable {
     }
 
     function commit() external {
-        require(msg.data.length - 4 % 32 == 0);
+        require((msg.data.length - 4) % 32 == 0);
         // Todo: maximum commitment size
 
         bytes32 bulkCommitment = keccak256(abi.encodePacked(msg.data[4:]));
@@ -48,7 +48,7 @@ contract L1Controller is Ownable {
                 registrations[i].duration
             );
 
-            if (registrations[i].commitment == bytes32(0)) {
+            if (registrations[i].commitment != bytes32(0)) {
                 // If the name is empty, then the user didn't provide their data to the relayer
                 skippedCommitments[i] = registrations[i].commitment;
             } else {
@@ -58,7 +58,7 @@ contract L1Controller is Ownable {
 
         ensBulkRegistrar.register{ value: msg.value }(fullRegistrations);
 
-        // l2Bridge.recordRegistration(msg.sender, registeredNames, skippedCommitments);
+        l2Bridge.recordRegistration(msg.sender, registeredNames, skippedCommitments);
     }
 
     function generateCommitment(

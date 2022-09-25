@@ -12,6 +12,7 @@ contract MockBridge {
 
     fallback() external {
         require(msg.sender == l1);
-        l2.call(msg.data);
+        (bool success, bytes memory result) = l2.call(msg.data);
+        require(success, string(result));
     }
 }
